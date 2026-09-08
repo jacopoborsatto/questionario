@@ -664,8 +664,9 @@ document.getElementById("dl").addEventListener("click", async () => {
   }
 });
 
-// Caselle a cui arrivano le schede compilate.
+// Caselle a cui arrivano le schede compilate. La prima è quella del servizio di invio.
 const STUDIO = ["jacopo.borsatto@gmail.com", "emiliano.verdi222@gmail.com"];
+const CHIAVE = "c511e04f-3f37-430b-975e-b9e1cdd95766";
 const STUDIO_TXT = STUDIO.join(" e ");
 const send = document.getElementById("send");
 
@@ -713,28 +714,35 @@ send.addEventListener("click", async () => {
   send.disabled = true;
   tell("Sto preparando il documento…");
 
-  const campi = new FormData();
-  campi.append("_subject", "Scheda atleta — " + txt("nome"));
-  campi.append("_cc", STUDIO.slice(1).join(","));
-  campi.append("_replyto", mail);
-  campi.append("_template", "basic");
-  campi.append("_captcha", "false");
-  campi.append("Atleta", txt("nome"));
-  campi.append("Email", mail);
-  campi.append("SCHEDA — seleziona da qui in giù, copia e incolla", "\n" + testo);
+  function pacco(conAllegato) {
+    const f = new FormData();
+    f.append("access_key", CHIAVE);
+    f.append("subject", "Scheda atleta — " + txt("nome"));
+    f.append("from_name", "Questionario atleti");
+    f.append("replyto", mail);
+    f.append("ccemail", STUDIO.slice(1).join(","));
+    f.append("message", testo);
+    if (conAllegato) {
+      const blob = creaPdf();
+      if (blob) f.append("attachment", blob, nomeFile("pdf"));
+    }
+    return f;
+  }
 
-  const blob = creaPdf();
-  if (blob) campi.append("attachment", blob, nomeFile("pdf"));
+  async function spedisci(conAllegato) {
+    const r = await fetch("https://api.web3forms.com/submit", {
+      method: "POST", headers: { "Accept": "application/json" }, body: pacco(conAllegato)
+    });
+    const j = await r.json();
+    if (!r.ok || j.success !== true) throw new Error(j.message || ("http " + r.status));
+    return true;
+  }
 
   try {
     tell("Sto inviando…");
-    const r = await fetch("https://formsubmit.co/ajax/" + STUDIO[0], {
-      method: "POST", headers: { "Accept": "application/json" }, body: campi
-    });
-    if (!r.ok) throw new Error("http " + r.status);
-    const j = await r.json();
-    if (String(j.success) !== "true") throw new Error("ko");
-    grazie("Le tue risposte sono arrivate allo studio in un documento ordinato. Le leggiamo e ti scriviamo a <b>"
+    try { await spedisci(true); }        // prima col PDF allegato
+    catch (e) { await spedisci(false); } // se non passa, almeno il testo
+    grazie("Le tue risposte sono arrivate allo studio. Le leggiamo e ti scriviamo a <b>"
       + esc(mail) + "</b>: se manca qualcosa te lo chiediamo, altrimenti passiamo al piano.");
     return;
   } catch (e) { /* si prosegue col ripiego */ }
