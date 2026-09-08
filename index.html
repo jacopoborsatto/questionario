@@ -254,6 +254,7 @@
   </main>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 const NLS = "non lo so";
 const CHIAVI = { "Palestra":["pesi"], "Corsa":["corsa"] };
@@ -472,6 +473,101 @@ document.querySelectorAll(".chip[data-nls]").forEach(b => {
 
 function txt(id) { const v = V[id]; return Array.isArray(v) ? v.join(", ") : (v ? String(v).trim() : ""); }
 
+function risposte() {
+  const out = [];
+  S.forEach(sec => {
+    const vis = sec.f.filter(visibile);
+    if (!vis.length) return;
+    const righe = [];
+    vis.forEach(f => {
+      if (f.type === "grid") {
+        const v = f.rows.map((r, k) => [r, txt(rowId(f, k))]).filter(x => x[1]);
+        righe.push([f.l, v.length ? v.map(x => x[0] + ": " + x[1]).join("\n") : "—"]);
+        return;
+      }
+      righe.push([f.l, txt(f.id) || "—"]);
+      if (f.sub) { const sv = txt(f.sub.id); if (sv) righe.push([f.sub.l, sv]); }
+    });
+    out.push([sec.t, righe]);
+  });
+  return out;
+}
+
+function creaPdf() {
+  const J = window.jspdf && window.jspdf.jsPDF;
+  if (!J) return null;
+  const d = new Doc(new J({ unit: "mm", format: "a4" }));
+  d.intestazione(txt("nome"), txt("email"));
+  risposte().forEach(([titolo, righe]) => {
+    d.sezione(titolo);
+    righe.forEach(([dom, ris]) => d.riga(dom, ris));
+  });
+  d.pieDiPagina();
+  return d.pdf.output("blob");
+}
+
+function Doc(pdf) {
+  this.pdf = pdf; this.y = 0; this.n = 0;
+  const W = 210, M = 18, LARG = W - M * 2;
+  const AMBRA = [217, 119, 6], NERO = [17, 17, 20], GRIGIO = [100, 100, 110];
+
+  this.nuovaPagina = () => {
+    if (this.n) this.pdf.addPage();
+    this.n++; this.y = M;
+  };
+  this.spazio = (h) => { if (this.y + h > 275) this.nuovaPagina(); };
+
+  this.intestazione = (nome, mail) => {
+    this.nuovaPagina();
+    this.pdf.setFillColor(...AMBRA);
+    this.pdf.rect(0, 0, W, 3, "F");
+    this.y = 26;
+    this.pdf.setFont("helvetica", "bold").setFontSize(22).setTextColor(...NERO);
+    this.pdf.text("Scheda atleta", M, this.y);
+    this.y += 9;
+    this.pdf.setFont("helvetica", "normal").setFontSize(11).setTextColor(...GRIGIO);
+    const d = new Date(), p = x => String(x).padStart(2, "0");
+    this.pdf.text(nome + (mail ? "  ·  " + mail : ""), M, this.y);
+    this.y += 5.5;
+    this.pdf.text("Compilata il " + p(d.getDate()) + "/" + p(d.getMonth() + 1) + "/" + d.getFullYear(), M, this.y);
+    this.y += 8;
+    this.pdf.setDrawColor(220, 220, 226).line(M, this.y, W - M, this.y);
+    this.y += 10;
+  };
+
+  this.sezione = (t) => {
+    this.spazio(22);
+    this.y += 3;
+    this.pdf.setFont("helvetica", "bold").setFontSize(13).setTextColor(...AMBRA);
+    this.pdf.text(t.toUpperCase(), M, this.y);
+    this.y += 6;
+  };
+
+  this.riga = (dom, ris) => {
+    this.pdf.setFont("helvetica", "normal").setFontSize(9.5).setTextColor(...GRIGIO);
+    const d1 = this.pdf.splitTextToSize(dom, LARG);
+    this.pdf.setFont("helvetica", "bold").setFontSize(11).setTextColor(...NERO);
+    const d2 = this.pdf.splitTextToSize(ris, LARG);
+    this.spazio(d1.length * 4.4 + d2.length * 5 + 6);
+    this.pdf.setFont("helvetica", "normal").setFontSize(9.5).setTextColor(...GRIGIO);
+    this.pdf.text(d1, M, this.y);
+    this.y += d1.length * 4.4 + 1;
+    this.pdf.setFont("helvetica", "bold").setFontSize(11).setTextColor(...NERO);
+    this.pdf.text(d2, M, this.y);
+    this.y += d2.length * 5 + 4;
+  };
+
+  this.pieDiPagina = () => {
+    const tot = this.pdf.getNumberOfPages();
+    for (let i = 1; i <= tot; i++) {
+      this.pdf.setPage(i);
+      this.pdf.setFont("helvetica", "normal").setFontSize(8).setTextColor(150, 150, 158);
+      this.pdf.text("Studio di preparazione atletica — Padova", M, 288);
+      this.pdf.text(i + " / " + tot, W - M, 288, { align: "right" });
+    }
+  };
+}
+
 function compile() {
   const d = new Date(), p = n => String(n).padStart(2, "0");
   let out = "SCHEDA ATLETA\nNome: " + (txt("nome") || "—")
@@ -526,7 +622,8 @@ document.getElementById("cp").addEventListener("click", async () => {
 
 const downloads = {
   save({ filename, data }) {
-    const url = URL.createObjectURL(new Blob([data], { type: "text/plain;charset=utf-8" }));
+    const blob = data instanceof Blob ? data : new Blob([data], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url; a.download = filename;
     document.body.appendChild(a); a.click(); a.remove();
@@ -535,15 +632,21 @@ const downloads = {
   }
 };
 
-function nomeFile() {
+function nomeFile(ext) {
   const n = (txt("nome") || "atleta").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
   const d = new Date(), p = x => String(x).padStart(2, "0");
-  return "scheda-" + (n || "atleta") + "-" + d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + ".txt";
+  return "scheda-" + (n || "atleta") + "-" + d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + "." + (ext || "pdf");
+}
+
+async function scarica() {
+  const blob = creaPdf();
+  if (blob) return downloads.save({ filename: nomeFile("pdf"), data: blob });
+  return downloads.save({ filename: nomeFile("txt"), data: compile() });
 }
 
 document.getElementById("dl").addEventListener("click", async () => {
   if (!downloads) { tell("Da qui non si può scaricare: usa «copia il testo».", "err"); return; }
-  try { await downloads.save({ filename: nomeFile(), data: compile() }); tell("Scaricato. Mandacelo quando vuoi.", "ok"); }
+  try { await scarica(); tell("Scaricato. Mandacelo quando vuoi.", "ok"); }
   catch (e) {
     const c = e && e.code;
     if (c === "declined") tell("");
@@ -570,7 +673,7 @@ function grazie(html) {
   });
   document.getElementById("dl2").addEventListener("click", async () => {
     if (!downloads) { say2.textContent = "Da qui non si può scaricare."; return; }
-    try { await downloads.save({ filename: nomeFile(), data: compile() }); say2.textContent = "Scaricato."; }
+    try { await scarica(); say2.textContent = "Scaricato."; }
     catch (e) {}
   });
 }
@@ -597,26 +700,34 @@ send.addEventListener("click", async () => {
 
   const testo = compile();
   send.disabled = true;
-  tell("Sto inviando…");
+  tell("Sto preparando il documento…");
+
+  const campi = new FormData();
+  campi.append("_subject", "Scheda atleta — " + txt("nome"));
+  campi.append("_cc", STUDIO.slice(1).join(","));
+  campi.append("_replyto", mail);
+  campi.append("_template", "table");
+  campi.append("_captcha", "false");
+  campi.append("Atleta", txt("nome"));
+  campi.append("Email", mail);
+  risposte().forEach(([titolo, righe]) => {
+    campi.append("— " + titolo.toUpperCase() + " —", "");
+    righe.forEach(([dom, ris]) => campi.append(dom, ris));
+  });
+
+  const blob = creaPdf();
+  if (blob) campi.append("attachment", blob, nomeFile("pdf"));
 
   try {
+    tell("Sto inviando…");
     const r = await fetch("https://formsubmit.co/ajax/" + STUDIO[0], {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Accept": "application/json" },
-      body: JSON.stringify({
-        _subject: "Scheda atleta — " + txt("nome"),
-        _cc: STUDIO.slice(1).join(","),
-        _replyto: mail,
-        _template: "table",
-        Nome: txt("nome"),
-        Email: mail,
-        Scheda: testo
-      })
+      method: "POST", headers: { "Accept": "application/json" }, body: campi
     });
     if (!r.ok) throw new Error("http " + r.status);
     const j = await r.json();
     if (String(j.success) !== "true") throw new Error("ko");
-    grazie("Le tue risposte sono arrivate allo studio. Le leggiamo e ti scriviamo noi a <b>" + esc(mail) + "</b>: se manca qualcosa te lo chiediamo, altrimenti passiamo al piano.");
+    grazie("Le tue risposte sono arrivate allo studio in un documento ordinato. Le leggiamo e ti scriviamo a <b>"
+      + esc(mail) + "</b>: se manca qualcosa te lo chiediamo, altrimenti passiamo al piano.");
     return;
   } catch (e) { /* si prosegue col ripiego */ }
 
