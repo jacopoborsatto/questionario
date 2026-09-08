@@ -570,22 +570,18 @@ function Doc(pdf) {
 
 function compile() {
   const d = new Date(), p = n => String(n).padStart(2, "0");
-  let out = "SCHEDA ATLETA\nNome: " + (txt("nome") || "—")
-    + "\nCompilata il: " + p(d.getDate()) + "/" + p(d.getMonth() + 1) + "/" + d.getFullYear() + "\n";
-  S.forEach((s, i) => {
-    const vis = s.f.filter(visibile);
-    if (!vis.length) return;
-    out += "\n\n" + "=".repeat(52) + "\n" + (i + 1) + ". " + s.t.toUpperCase() + "\n" + "=".repeat(52) + "\n";
-    vis.forEach(f => {
-      if (f.type === "grid") {
-        out += "\n" + f.l + "\n";
-        let n = 0;
-        f.rows.forEach((r, k) => { const v = txt(rowId(f, k)); if (v) { out += "   " + r + ": " + v + "\n"; n++; } });
-        if (!n) out += "→ (nessuna risposta)\n";
-        return;
-      }
-      out += "\n" + f.l + "\n→ " + (txt(f.id) || "(nessuna risposta)") + "\n";
-      if (f.sub) { const sv = txt(f.sub.id); if (sv) out += "   " + f.sub.l + ": " + sv + "\n"; }
+  const cap = [txt("eta") ? txt("eta") + " anni" : "", txt("sesso"), txt("esperienza")].filter(Boolean).join(" · ");
+  let out = "=== SCHEDA ATLETA ===\n"
+    + "Atleta: " + (txt("nome") || "—") + (txt("email") ? " · " + txt("email") : "") + "\n"
+    + (cap ? cap + "\n" : "")
+    + "Compilata: " + p(d.getDate()) + "/" + p(d.getMonth() + 1) + "/" + d.getFullYear() + "\n";
+  risposte().forEach(([titolo, righe]) => {
+    out += "\n[" + titolo.toUpperCase() + "]\n";
+    righe.forEach(([dom, ris]) => {
+      if (ris === "—") return;
+      out += ris.indexOf("\n") > -1
+        ? dom + ":\n" + ris.split("\n").map(r => "  " + r).join("\n") + "\n"
+        : dom + ": " + ris + "\n";
     });
   });
   return out;
@@ -706,14 +702,11 @@ send.addEventListener("click", async () => {
   campi.append("_subject", "Scheda atleta — " + txt("nome"));
   campi.append("_cc", STUDIO.slice(1).join(","));
   campi.append("_replyto", mail);
-  campi.append("_template", "table");
+  campi.append("_template", "basic");
   campi.append("_captcha", "false");
   campi.append("Atleta", txt("nome"));
   campi.append("Email", mail);
-  risposte().forEach(([titolo, righe]) => {
-    campi.append("— " + titolo.toUpperCase() + " —", "");
-    righe.forEach(([dom, ris]) => campi.append(dom, ris));
-  });
+  campi.append("SCHEDA — seleziona da qui in giù, copia e incolla", "\n" + testo);
 
   const blob = creaPdf();
   if (blob) campi.append("attachment", blob, nomeFile("pdf"));
