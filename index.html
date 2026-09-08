@@ -139,6 +139,7 @@
   .opt:focus-visible{outline:2px solid var(--focus); outline-offset:2px}
   .opt .tick{display:none; margin-right:6px; font-family:"IBM Plex Mono",monospace; font-size:12px}
   .opt[aria-pressed="true"] .tick{display:inline}
+  .opts.giorni .opt{min-width:62px; text-align:center; padding:9px 12px}
   .multi-note{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.08em;
     text-transform:uppercase; color:var(--faint); margin:0 0 9px}
   .sub{margin-top:11px}
@@ -273,13 +274,25 @@ const S = [
   {id:"email", l:"La tua email", type:"line", p:"nome@email.it",
    h:"Ci serve per risponderti e mandarti il piano."},
   {id:"eta", l:"Quanti anni hai", type:"line", p:"34", short:true},
+  {id:"peso", l:"Quanto pesi (kg)", type:"line", p:"62", short:true},
+  {id:"altezza", l:"Quanto sei alto/a (cm)", type:"line", p:"170", short:true},
   {id:"sesso", l:"Sesso", type:"one", o:["Maschio","Femmina","Preferisco non dirlo"]},
   {id:"esperienza", l:"Da quanto ti alleni", type:"one",
    o:["Ricomincio adesso","Meno di 1 anno","1–3 anni","3–5 anni","Più di 5 anni"]},
   {id:"giorni", l:"Quanti giorni a settimana ti alleni", type:"one",
    h:"Quelli veri, non quelli che vorresti.", o:["1","2","3","4","5","6 o più"]},
+  {id:"giorni_quali", l:"In quali giorni ti alleni", type:"days", seCompilato:"giorni",
+   h:"Serve per distanziare bene i gruppi muscolari.",
+   o:["Lun","Mar","Mer","Gio","Ven","Sab","Dom"], max:"giorni",
+   sub:{id:"orario", l:"Di solito a che ora ti alleni", type:"one",
+        o:["Mattina presto","Mattina","Pausa pranzo","Pomeriggio","Sera"]}},
   {id:"durata", l:"Quanto dura un allenamento", type:"one",
-   o:["Meno di 45 minuti","45–60 minuti","1 ora e mezza","Più di 1 ora e mezza"]}
+   o:["Meno di 45 minuti","45–60 minuti","1 ora e mezza","Più di 1 ora e mezza"]},
+  {id:"recupero", l:"Quanto recuperi tra una serie e l'altra", type:"one",
+   o:["Meno di 30 secondi","30-60 secondi","1-2 minuti","Più di 2 minuti","Non li conto"]},
+  {id:"cedimento", l:"Quanto arrivi vicino al cedimento", type:"one",
+   h:"Cedimento = non riesci a fare un'altra ripetizione pulita.",
+   o:["Mi fermo molto prima","Mi restano 2-3 ripetizioni","Mi resta 1 ripetizione","Vado a cedimento","Non lo so"]}
 ]},
 
 {t:"Cosa vuoi ottenere", short:"Obiettivo", f:[
@@ -287,11 +300,19 @@ const S = [
    h:"Puoi sceglierli tutti e due.", o:["Palestra","Corsa"]},
   {id:"obiettivo", l:"Qual è il tuo obiettivo", type:"text",
    h:"Scrivilo con parole tue: «voglio mettere massa», «voglio finire la mezza maratona», «voglio togliermi il mal di schiena».", rows:3},
+  {id:"scheda_attuale", l:"Qual è la scheda che stai seguendo adesso", type:"text", rows:4,
+   h:"Incollala qui com'è, anche disordinata. Se ce l'hai su carta o su un'app, mandaci una foto su WhatsApp e scrivi qui «te la mando». È l'informazione più utile di tutte."},
+  {id:"extra", l:"Cosa fai in più, oltre alla palestra", type:"text", rows:2,
+   h:"Anche saltuario: corsi, video a casa, padel con gli amici, yoga, camminate lunghe. Ci serve per contare quanta fatica fai già in una settimana."},
   {id:"altro_sport", l:"Ti serve per uno sport che pratichi già?", type:"line",
    h:"Calcio, arti marziali, arrampicata, sci... Noi alleniamo palestra e corsa, ma le usiamo per farti arrivare pronto a quello. Se non è il tuo caso lascia vuoto."},
   {id:"ha_data", l:"C'è una data da rispettare", type:"one",
    o:["Sì, una gara","Sì, una prova o un concorso","Sì, un evento personale","No"],
    sub:{id:"data", l:"Quale, e in che giorno", type:"line"}},
+  {id:"dieta", l:"Stai seguendo un'alimentazione particolare", type:"one",
+   h:"Non facciamo piani alimentari. Ci serve solo per capire cosa aspettarci dai progressi.",
+   o:["No, mangio normale","Sto cercando di dimagrire","Sto cercando di mettere massa",
+      "Seguo un piano di un nutrizionista","Non lo so"]},
 
   {id:"carichi", l:"Che carichi usi adesso", type:"grid", k:["pesi"],
    h:"Scrivi il peso e le ripetizioni che riesci a fare, per esempio «60 kg x 8». Se un esercizio non lo fai, lascia la riga vuota.",
@@ -309,11 +330,11 @@ const S = [
 
 {t:"Dove ti alleni", short:"Dove", f:[
   {id:"luogo", l:"Dove ti alleni", type:"many", o:["In palestra","A casa","All'aperto"]},
-  {id:"attrezzi_pal", l:"Cosa c'è nella tua palestra", type:"many",
-   se:{id:"luogo", v:["In palestra"]}, h:"Tocca quello che c'è. Se non sei sicuro, lascia stare.",
-   o:["Bilanciere e dischi","Rack o gabbia per squat","Panca","Manubri","Kettlebell",
-      "Macchine","Cavi","Sbarra per trazioni","Tapis roulant","Cyclette o vogatore"],
-   sub:{id:"manubri_kg", l:"Qual è il manubrio più pesante che c'è (guarda l'ultimo della rastrelliera)", type:"line", short:true}},
+  {id:"attrezzatura", l:"Cosa hai a disposizione", type:"many",
+   h:"Tocca tutto quello che hai.",
+   o:["Palestra attrezzata","Manubri","Bilancieri","Corpo libero"],
+   sub:{id:"manubri_kg", l:"Qual è il manubrio più pesante che hai a disposizione (kg)",
+        type:"line", short:true, se:{id:"attrezzatura", v:["Manubri"]}}},
   {id:"attrezzi_casa", l:"Cosa hai in casa", type:"many", se:{id:"luogo", v:["A casa"]},
    o:["Manubri","Elastici","Kettlebell","Sbarra per trazioni","Panca","Niente, solo il corpo"]},
   {id:"corsa_dove", l:"Dove corri", type:"many", k:["corsa"],
@@ -326,10 +347,23 @@ const S = [
    o:["Mai avuto niente","Spalla","Gomito","Polso","Collo","Schiena","Anca",
       "Ginocchio","Polpaccio","Caviglia","Piede","Tendine d'Achille"]},
   {id:"infortuni", l:"Raccontaci cosa è successo", type:"text",
-   h:"Infortuni, operazioni, cose che si ripresentano. Cosa e quando.", rows:3},
+   h:"Infortuni, operazioni, cose che si ripresentano. Cosa e quando.", rows:3,
+   sub:{id:"fisio", l:"Hai fatto fisioterapia per quell'infortunio", type:"one",
+        o:["Sì, e sono stato dimesso","Sì, ma l'ho interrotta","No","Sto ancora andando"],
+        sub:{id:"limitazioni", type:"line",
+             l:"Un medico o un fisioterapista ti ha detto di evitare qualche movimento? Quale"}}},
   {id:"dolore", l:"Hai male da qualche parte adesso", type:"one",
    o:["No","Sì, ogni tanto","Sì, quasi sempre"],
    sub:{id:"dolore_det", l:"Dove, da quanto, e quando ti fa male (a freddo, mentre ti alleni, il giorno dopo)", type:"text", rows:3}},
+  {id:"paura", l:"C'è qualche esercizio che eviti perché ti mette a disagio o hai paura di farti male", type:"many",
+   h:"Non è la stessa cosa di «non mi piace». Se hai avuto un infortunio e da allora un movimento ti fa paura, dillo: ci lavoriamo sopra, non lo togliamo e basta.",
+   o:["No, nessuno","Squat e accosciate","Stacchi","Panca","Spinte sopra la testa",
+      "Salti e corsa","Esercizi su una gamba sola","Altro"],
+   sub:{id:"paura_det", l:"Quale, e cosa è successo", type:"text", rows:2}},
+  {id:"asimmetrie", l:"Senti delle differenze tra il lato destro e il sinistro", type:"many",
+   o:["No, mi sembrano uguali","Un braccio è più forte","Una gamba è più forte",
+      "Un lato è visibilmente più grosso","C'è un muscolo che non riesco a sentire lavorare"],
+   sub:{id:"asimmetrie_det", l:"Quale lato e quale muscolo", type:"line"}},
   {id:"certificato", l:"Hai il certificato medico sportivo", type:"one",
    o:["Sì, agonistico","Sì, non agonistico","No","È scaduto",NLS],
    sub:{id:"scadenza", l:"Quando scade", type:"line", short:true}},
@@ -338,8 +372,14 @@ const S = [
   {id:"lavoro", l:"Che lavoro fai", type:"one",
    h:"Ci serve per capire quanto sei già stanco prima di allenarti.",
    o:["Sto seduto","Sto in piedi","È faticoso fisicamente","Faccio i turni"]},
+  {id:"sonno", l:"Quanto dormi di solito", type:"one",
+   o:["Meno di 6 ore","6-7 ore","7-8 ore","Più di 8 ore"]},
+  {id:"stress", l:"Quanto sei sotto stress in questo periodo, da 1 a 5", type:"one",
+   o:["1 - tranquillo","2","3","4","5 - molto stressato"]},
+  {id:"passi", l:"Quanto ti muovi durante la giornata, fuori dall'allenamento", type:"one",
+   o:["Sto quasi sempre fermo","Cammino un po'","Cammino parecchio","Non lo so"]},
   {id:"altro", l:"Altro che ci serve sapere", type:"text",
-   h:"Come dormi, periodi già incasinati, viaggi. Se non c'è niente, lascia vuoto.", rows:3}
+   h:"Periodi già incasinati, viaggi, qualsiasi cosa. Se non c'è niente, lascia vuoto.", rows:3}
 ]},
 
 {t:"Cosa ti piace e cosa no", short:"Gusti", i:"Un allenamento che non fai non serve a niente. Dicci la verità: cambiamo esercizio, non ti obblighiamo.", f:[
@@ -352,7 +392,9 @@ const S = [
    o:["Panca e spinte","Squat e gambe","Stacchi","Trazioni e dorso","Le macchine","Il corpo libero",
       "Addominali e core","Corsa lunga e lenta","Ripetute e sprint","Circuiti","Mobilità e stretching",
       "Salti e balzi","Tapis roulant","Cyclette o vogatore"],
-   sub:{id:"odi_det", l:"C'è un altro esercizio che non sopporti? Scrivilo", type:"line"}}
+   sub:{id:"odi_det", l:"C'è un altro esercizio che non sopporti? Scrivilo", type:"line"}},
+  {id:"checkin", l:"Ogni quanto ti fa piacere sentirci", type:"one",
+   o:["Ogni settimana","Ogni due settimane","Una volta al mese","Solo se ho un problema"]}
 ]}
 ];
 
@@ -376,17 +418,25 @@ function chiaviAttive() {
 }
 function visibile(f) {
   if (f.k) { const a = chiaviAttive(); if (!f.k.some(k => a[k])) return false; }
+  if (f.seCompilato && !pieno(f.seCompilato)) return false;
   if (f.se) {
     const v = V[f.se.id], arr = Array.isArray(v) ? v : (v ? [v] : []);
     if (!f.se.v.some(x => arr.indexOf(x) > -1)) return false;
   }
   return true;
 }
+// quanti giorni può accendere: lo dice la risposta a "quanti giorni ti alleni"
+function tettoGiorni(f) {
+  const v = String(V[f.max] || "");
+  if (!v) return f.o.length;
+  const n = parseInt(v, 10);
+  return isNaN(n) ? f.o.length : (v.indexOf("più") > -1 ? f.o.length : n);
+}
 const rowId = (f, i) => f.id + "__" + i;
 
 function fieldHTML(f, main) {
   const h = f.h ? '<span class="hint">' + esc(f.h) + "</span>" : "";
-  const attr = main ? ' class="f" data-fid="' + f.id + '"' : ' class="sub"';
+  const attr = ' class="' + (main ? "f" : "sub") + '" data-fid="' + f.id + '"';
   const lab = '<span class="' + (main ? "lab" : "sub-lab") + '">' + esc(f.l) + "</span>";
 
   if (f.type === "grid") {
@@ -397,10 +447,12 @@ function fieldHTML(f, main) {
     });
     return s + "</div></div>";
   }
-  if (f.type === "one" || f.type === "many") {
-    const many = f.type === "many";
+  if (f.type === "one" || f.type === "many" || f.type === "days") {
+    const many = f.type !== "one";
+    const days = f.type === "days";
     let s = "<div" + attr + ">" + lab + h
-      + '<div class="opts" role="group" data-id="' + f.id + '" data-many="' + many + '">';
+      + '<div class="opts' + (days ? " giorni" : "") + '" role="group" data-id="' + f.id
+      + '" data-many="' + many + '" data-days="' + days + '" data-max="' + (f.max || "") + '">';
     f.o.forEach(o => {
       s += '<button type="button" class="opt" aria-pressed="false" data-v="' + esc(o) + '">'
         + '<span class="tick">✓</span>' + esc(o) + "</button>";
@@ -415,7 +467,7 @@ function fieldHTML(f, main) {
   const nls = f.nls
     ? '<div class="chiprow"><button type="button" class="chip" data-nls="' + f.id + '">non lo so</button></div>' : "";
   return "<div" + attr + '><label for="' + f.id + '" class="' + (main ? "lab" : "sub-lab") + '">'
-    + esc(f.l) + "</label>" + h + tag + nls + "</div>";
+    + esc(f.l) + "</label>" + h + tag + nls + (f.sub ? fieldHTML(f.sub, false) : "") + "</div>";
 }
 
 S.forEach((s, i) => {
@@ -435,6 +487,13 @@ S.forEach((s, i) => {
   li.innerHTML = '<a href="#s' + (i + 1) + '" data-sec="' + i + '"><span class="n">' + n + "</span><span>" + esc(s.short) + "</span></a>";
   idx.appendChild(li);
 });
+
+function tuttiICampi() {
+  const out = [];
+  const giu = f => { out.push(f); if (f.sub) giu(f.sub); };
+  S.forEach(sec => sec.f.forEach(giu));
+  return out;
+}
 
 function grow(t) { if (t.tagName === "TEXTAREA") { t.style.height = "auto"; t.style.height = (t.scrollHeight + 2) + "px"; } }
 function save() { try { localStorage.setItem(KEY, JSON.stringify({ t: Date.now(), v: V })); } catch (e) {} }
@@ -465,7 +524,15 @@ document.querySelectorAll(".opts").forEach(g => {
       if (many) {
         let a = Array.isArray(V[id]) ? V[id].slice() : [];
         const k = a.indexOf(v);
-        if (k > -1) a.splice(k, 1); else a.push(v);
+        if (k > -1) a.splice(k, 1);
+        else {
+          if (g.dataset.days === "true") {
+            const campo = tuttiICampi().filter(x => x.id === id)[0];
+            const tetto = campo ? tettoGiorni(campo) : 7;
+            while (a.length >= tetto) a.shift();   // si spegne il più vecchio
+          }
+          a.push(v);
+        }
         V[id] = a;
         g.querySelectorAll(".opt").forEach(x => x.setAttribute("aria-pressed", a.indexOf(x.dataset.v) > -1 ? "true" : "false"));
       } else {
@@ -489,19 +556,21 @@ function txt(id) { const v = V[id]; return Array.isArray(v) ? v.join(", ") : (v 
 
 function risposte() {
   const out = [];
+  const giu = (f, righe) => {
+    if (!visibile(f)) return;
+    if (f.type === "grid") {
+      const v = f.rows.map((r, k) => [r, txt(rowId(f, k))]).filter(x => x[1]);
+      righe.push([f.l, v.length ? v.map(x => x[0] + ": " + x[1]).join("\n") : "—"]);
+    } else {
+      righe.push([f.l, txt(f.id) || "—"]);
+    }
+    if (f.sub) giu(f.sub, righe);
+  };
   S.forEach(sec => {
     const vis = sec.f.filter(visibile);
     if (!vis.length) return;
     const righe = [];
-    vis.forEach(f => {
-      if (f.type === "grid") {
-        const v = f.rows.map((r, k) => [r, txt(rowId(f, k))]).filter(x => x[1]);
-        righe.push([f.l, v.length ? v.map(x => x[0] + ": " + x[1]).join("\n") : "—"]);
-        return;
-      }
-      righe.push([f.l, txt(f.id) || "—"]);
-      if (f.sub) { const sv = txt(f.sub.id); if (sv) righe.push([f.sub.l, sv]); }
-    });
+    vis.forEach(f => giu(f, righe));
     out.push([sec.t, righe]);
   });
   return out;
@@ -598,18 +667,31 @@ function compile() {
         : dom + ": " + ris + "\n";
     });
   });
+  out += "\n--- DATI (non cancellare) ---\n" + JSON.stringify(V) + "\n--- FINE DATI ---\n";
   return out;
 }
 
 const fillEl = document.getElementById("fill"), pctEl = document.getElementById("pct");
 function refresh() {
   let tot = 0, done = 0;
+  tuttiICampi().forEach(f => {
+    if (f.type !== "days") return;
+    const a = Array.isArray(V[f.id]) ? V[f.id] : [];
+    const tetto = tettoGiorni(f);
+    if (a.length > tetto) {
+      V[f.id] = a.slice(a.length - tetto);
+      save();
+      const g = form.querySelector('.opts[data-id="' + f.id + '"]');
+      if (g) g.querySelectorAll(".opt").forEach(x =>
+        x.setAttribute("aria-pressed", V[f.id].indexOf(x.dataset.v) > -1 ? "true" : "false"));
+    }
+  });
+  tuttiICampi().forEach(f => {
+    const el = form.querySelector('[data-fid="' + f.id + '"]');
+    if (el) el.hidden = !visibile(f);
+  });
   S.forEach((s, i) => {
     const vis = s.f.filter(visibile);
-    s.f.forEach(f => {
-      const el = form.querySelector('.f[data-fid="' + f.id + '"]');
-      if (el) el.hidden = vis.indexOf(f) === -1;
-    });
     tot += vis.length;
     done += vis.filter(has).length;
     const a = idx.querySelector('a[data-sec="' + i + '"]');
