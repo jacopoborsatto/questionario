@@ -809,7 +809,6 @@ send.addEventListener("click", async () => {
     f.append("subject", "Scheda atleta — " + txt("nome"));
     f.append("from_name", "Questionario atleti");
     f.append("replyto", mail);
-    f.append("ccemail", STUDIO.slice(1).join(","));
     f.append("message", testo);
     const r = await fetch("https://api.web3forms.com/submit", {
       method: "POST", headers: { "Accept": "application/json" }, body: f
