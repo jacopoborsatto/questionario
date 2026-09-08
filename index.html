@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scheda Atleta — Studio di preparazione atletica</title>
+<meta name="description" content="Questionario iniziale: raccogliamo i tuoi dati prima di scriverti il piano di allenamento.">
+<meta name="robots" content="noindex">
+<style>
+  :root{color-scheme:light dark}
+  html,body{margin:0}
+  img{max-width:100%}
+  [hidden]{display:none !important}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+  :root{
+    --ground:#F2F2F7; --surface:#FFFFFF; --surface-2:#E8E8ED;
+    --ink:#111114; --muted:#5B5D66; --faint:#666870;
+    --line:#DCDCE3; --line-strong:#C3C3CC;
+    --accent:#D97706; --accent-bright:#F59E0B; --accent-soft:#FDF1DE; --on-accent:#FFFFFF;
+    --signal:#DC2626; --signal-soft:#FBE7E7;
+    --focus:#D97706;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+    --ground:#0A0A0B; --surface:#131316; --surface-2:#1C1C21;
+    --ink:#ECEDEE; --muted:#8B8D93; --faint:#7E808A;
+    --line:#26262B; --line-strong:#37373E;
+    --accent:#F59E0B; --accent-bright:#F59E0B; --accent-soft:#2A1F0C; --on-accent:#0A0A0B;
+    --signal:#F87171; --signal-soft:#2C1616;
+    --focus:#F59E0B;
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0A0A0B; --surface:#131316; --surface-2:#1C1C21;
+    --ink:#ECEDEE; --muted:#8B8D93; --faint:#7E808A;
+    --line:#26262B; --line-strong:#37373E;
+    --accent:#F59E0B; --accent-bright:#F59E0B; --accent-soft:#2A1F0C; --on-accent:#0A0A0B;
+    --signal:#F87171; --signal-soft:#2C1616;
+    --focus:#F59E0B;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--ground); color:var(--ink);
+    font-family:"Source Serif 4",Georgia,"Times New Roman",serif;
+    font-size:17px; line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;text-wrap:balance}
+
+  .bar{position:sticky; top:0; z-index:20;
+    background:color-mix(in srgb, var(--ground) 88%, transparent);
+    backdrop-filter:blur(10px); border-bottom:1px solid var(--line)}
+  .bar-in{max-width:1140px; margin:0 auto; padding:10px 24px; display:flex; align-items:center; gap:16px}
+  .brand{font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--muted); white-space:nowrap}
+  .brand b{color:var(--ink); font-weight:600}
+  .prog{flex:1; display:flex; align-items:center; gap:10px; min-width:0}
+  .track{flex:1; height:3px; background:var(--line); border-radius:2px; overflow:hidden; min-width:60px}
+  .fill{height:100%; width:0%; background:var(--accent-bright); transition:width .35s cubic-bezier(.2,.7,.3,1)}
+  .pct{font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:500;
+    color:var(--muted); font-variant-numeric:tabular-nums; white-space:nowrap}
+
+  .shell{max-width:1140px; margin:0 auto; padding:0 24px 120px; display:grid; grid-template-columns:1fr}
+  @media(min-width:1000px){.shell{grid-template-columns:180px minmax(0,680px); gap:60px; justify-content:center}}
+
+  .index{display:none}
+  @media(min-width:1000px){.index{display:block; position:sticky; top:76px; align-self:start; padding-top:8px}}
+  .index ol{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px}
+  .index a{display:flex; gap:9px; align-items:baseline;
+    font-family:"IBM Plex Mono",monospace; font-size:11.5px;
+    color:var(--faint); text-decoration:none; padding:5px 8px; border-radius:4px;
+    border-left:2px solid transparent; transition:color .2s, border-color .2s, background .2s}
+  .index a:hover{color:var(--ink); background:var(--surface-2)}
+  .index a.on{color:var(--accent); border-left-color:var(--accent)}
+  .index a.done{color:var(--accent)}
+  .index a .n{opacity:.6}
+
+  header.hero{padding:64px 0 40px; border-bottom:1px solid var(--line-strong)}
+  .eyebrow{font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--accent); margin:0 0 18px}
+  h1{font-size:clamp(38px,6.4vw,58px); line-height:.98; font-weight:700; letter-spacing:-.028em; margin:0 0 22px}
+  h1 em{font-style:normal; color:var(--accent)}
+  .lede{font-size:19px; color:var(--muted); margin:0 0 30px; max-width:56ch}
+  .rules{background:var(--surface); border:1px solid var(--line); border-radius:3px;
+    padding:22px 24px; display:flex; flex-direction:column; gap:14px}
+  .rule{display:flex; gap:14px; align-items:flex-start}
+  .rule .k{font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:600;
+    letter-spacing:.08em; text-transform:uppercase; color:var(--accent);
+    background:var(--accent-soft); padding:3px 7px; border-radius:3px; white-space:nowrap; margin-top:3px}
+  .rule p{margin:0; font-size:15.5px; line-height:1.55}
+  .rule p b{font-weight:600}
+
+  section{padding:52px 0; border-bottom:1px solid var(--line)}
+  .sec-head{display:flex; gap:16px; align-items:baseline; margin-bottom:8px}
+  .sec-n{font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600;
+    color:var(--accent); letter-spacing:.06em; padding-top:6px}
+  h2{font-size:27px; font-weight:700; letter-spacing:-.02em; margin:0; line-height:1.15}
+  .sec-intro{color:var(--muted); font-size:16px; margin:10px 0 0}
+  .fields{display:flex; flex-direction:column; gap:32px; margin-top:32px}
+  @media(min-width:1000px){.sec-intro,.fields,.flag{margin-left:40px}.sec-intro{max-width:52ch}}
+
+  .f label,.f .lab{display:block; font-size:16.5px; font-weight:600; margin-bottom:5px; line-height:1.4}
+  .f .hint{display:block; font-size:14px; color:var(--muted); margin-bottom:10px; line-height:1.5}
+
+  textarea,input[type=text]{
+    width:100%; display:block; font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+    font-size:14.5px; line-height:1.7; color:var(--ink);
+    background:var(--surface); border:1px solid var(--line);
+    border-bottom:2px solid var(--line-strong); border-radius:3px 3px 0 0;
+    padding:11px 13px; transition:border-color .18s}
+  textarea{resize:none; overflow:hidden; min-height:46px}
+  textarea::placeholder,input::placeholder{color:var(--faint)}
+  textarea:focus,input:focus{outline:none; border-bottom-color:var(--focus)}
+  textarea.filled,input.filled{border-bottom-color:var(--accent)}
+  input.short{max-width:220px}
+
+  /* option pills */
+  .opts{display:flex; flex-wrap:wrap; gap:8px}
+  .opt{
+    font-family:Archivo,sans-serif; font-size:14px; font-weight:500;
+    background:var(--surface); border:1px solid var(--line-strong); color:var(--ink);
+    padding:9px 15px; border-radius:99px; cursor:pointer; line-height:1.25;
+    transition:background .16s, border-color .16s, color .16s;
+  }
+  .opt:hover{border-color:var(--accent); color:var(--accent)}
+  .opt[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--on-accent)}
+  .opt[aria-pressed="true"]:hover{opacity:.9; color:var(--on-accent)}
+  .opt:focus-visible{outline:2px solid var(--focus); outline-offset:2px}
+  .opt .tick{display:none; margin-right:6px; font-family:"IBM Plex Mono",monospace; font-size:12px}
+  .opt[aria-pressed="true"] .tick{display:inline}
+  .multi-note{font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.08em;
+    text-transform:uppercase; color:var(--faint); margin:0 0 9px}
+  .sub{margin-top:11px}
+  .sub-lab{font-size:13.5px; color:var(--muted); margin-bottom:6px; display:block}
+
+  .grid{display:flex; flex-direction:column; gap:8px; margin-top:4px}
+  .gr{display:grid; grid-template-columns:minmax(0,1fr) 150px; gap:12px; align-items:center}
+  @media(max-width:520px){.gr{grid-template-columns:1fr; gap:4px}}
+  .gl{font-size:15.5px; font-weight:600}
+  .gi{font-size:14px; padding:9px 12px}
+  .chiprow{display:flex; gap:8px; margin-top:8px; flex-wrap:wrap}
+  .chip{font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:500;
+    letter-spacing:.06em; text-transform:uppercase; background:none;
+    border:1px solid var(--line-strong); color:var(--muted);
+    padding:4px 9px; border-radius:99px; cursor:pointer; transition:border-color .18s,color .18s,background .18s}
+  .chip:hover{border-color:var(--accent); color:var(--accent); background:var(--accent-soft)}
+  .chip:focus-visible{outline:2px solid var(--focus); outline-offset:2px}
+
+  .flag{border-left:3px solid var(--signal); background:var(--signal-soft);
+    padding:14px 18px; border-radius:0 3px 3px 0; margin-top:24px}
+  .flag p{margin:0; font-size:15px; line-height:1.55}
+  .flag .tag{display:block; font-family:"IBM Plex Mono",monospace; font-size:10.5px;
+    font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--signal); margin-bottom:6px}
+
+  .export{padding:56px 0 0}
+  @media(min-width:1000px){.export .inner{margin-left:40px}}
+  .btn{font-family:Archivo,sans-serif; font-size:14px; font-weight:600;
+    padding:12px 22px; border-radius:3px; cursor:pointer; border:1px solid transparent;
+    transition:opacity .18s, border-color .18s, color .18s}
+  .btn.primary{background:var(--accent); color:var(--on-accent); border-color:var(--accent)}
+  .btn.primary:hover{opacity:.88}
+  .btn.big{font-size:17px; padding:17px 38px}
+  .btn:disabled{opacity:.45; cursor:default}
+  .btn:focus-visible{outline:2px solid var(--focus); outline-offset:2px}
+  .say{font-family:"IBM Plex Mono",monospace; font-size:13px; color:var(--muted);
+    min-height:20px; margin:16px 0 0; line-height:1.5}
+  .say.err{color:var(--signal)}
+  .say.ok{color:var(--accent); font-weight:500}
+  .grazie{font-family:Archivo,sans-serif; font-size:30px; font-weight:700;
+    letter-spacing:-.02em; margin:0 0 12px; color:var(--accent)}
+  .grazie-sub{font-size:17px; color:var(--muted); margin:0; max-width:52ch}
+  .alt{font-size:14px; color:var(--faint); margin:22px 0 0}
+  .linkbtn{background:none; border:none; padding:0; cursor:pointer; font:inherit;
+    color:var(--muted); text-decoration:underline; text-underline-offset:3px}
+  .linkbtn:hover{color:var(--accent)}
+  .linkbtn:focus-visible{outline:2px solid var(--focus); outline-offset:2px}
+  #out{width:100%; margin-top:18px; min-height:220px; font-family:"IBM Plex Mono",monospace;
+    font-size:12.5px; line-height:1.6; background:var(--surface-2); color:var(--ink);
+    border:1px solid var(--line); border-radius:3px; padding:14px; resize:vertical;
+    white-space:pre; overflow:auto}
+    font-size:12.5px; line-height:1.6; background:var(--surface-2); color:var(--ink);
+    border:1px solid var(--line); border-radius:3px; padding:14px; resize:vertical;
+    white-space:pre; overflow:auto}
+  footer{margin-top:60px; padding-top:22px; border-top:1px solid var(--line);
+    font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--faint); line-height:1.7}
+
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion: reduce){*{transition:none !important; scroll-behavior:auto !important}}
+
+  @media print{
+    .bar,.index,.export,.chiprow{display:none !important}
+    body{background:#fff; color:#000; font-size:11pt}
+    .shell{display:block; max-width:none; padding:0}
+    .sec-intro,.fields,.flag{margin-left:0}
+    section{padding:16pt 0; border-bottom:1px solid #999}
+    .fields{gap:14pt}
+    textarea,input[type=text]{border:none; border-bottom:1px dotted #666; border-radius:0; min-height:30pt; background:none}
+    .opt{border:1px solid #666; background:none !important; color:#000 !important; padding:4pt 8pt}
+    .opt .tick{display:inline; color:#000}
+    header.hero{padding:0 0 16pt} h1{font-size:26pt}
+  }
+</style>
+
+<div class="bar">
+  <div class="bar-in">
+    <div class="brand"><b>Studio PD</b> · Scheda atleta</div>
+    <div class="prog">
+      <div class="track"><div class="fill" id="fill"></div></div>
+      <div class="pct" id="pct">0 / 0</div>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="index" aria-label="Indice sezioni"><ol id="idx"></ol></nav>
+  <main>
+    <header class="hero">
+      <p class="eyebrow">Prima di scriverti il piano</p>
+      <h1>Partiamo<br>da te<em>.</em></h1>
+      <p class="lede">Cinque blocchi, cinque minuti. Quasi tutto si risponde toccando un&#39;opzione, e ti chiediamo solo le cose che riguardano quello che vuoi allenare. Alla fine premi «Invia le risposte» e ci arrivano. Se ti interrompi, quello che hai scritto resta salvato su questo dispositivo.</p>
+      <div class="rules">
+        <div class="rule"><span class="k">Non lo so</span>
+          <p>Va benissimo. <b>Non inventare numeri</b>: se un dato ci manca, ti diciamo noi come misurarlo.</p></div>
+        <div class="rule"><span class="k">Vuoto</span>
+          <p>Se una domanda non ti riguarda, saltala e vai avanti.</p></div>
+        <div class="rule"><span class="k">Sincerità</span>
+          <p>Sui giorni, sui carichi e su cosa non ti va di fare: ci serve com&#39;è davvero, non come dovrebbe essere.</p></div>
+      </div>
+    </header>
+    <div id="form"></div>
+
+    <div class="export">
+      <div class="inner">
+        <button class="btn primary big" id="send">Invia le risposte</button>
+        <p class="say" id="say"></p>
+        <p class="alt">Oppure fai da te:
+          <button type="button" class="linkbtn" id="dl">scarica il file</button> ·
+          <button type="button" class="linkbtn" id="cp">copia il testo</button> ·
+          <button type="button" class="linkbtn" id="pr">stampa</button>
+        </p>
+        <textarea id="out" readonly spellcheck="false" aria-label="Risposte in formato testo" hidden></textarea>
+      </div>
+    </div>
+
+    <footer>
+      Studio di preparazione atletica &mdash; Padova<br>
+      Le risposte restano su questo dispositivo finché non ce le mandi tu.<br>
+      Questo questionario non è una valutazione medica e non sostituisce il parere di un medico.
+    </footer>
+  </main>
+</div>
+
+<script>
+const NLS = "non lo so";
+const CHIAVI = { "Palestra":["pesi"], "Corsa":["corsa"] };
+
+const S = [
+{t:"Chi sei", short:"Chi sei", f:[
+  {id:"nome", l:"Come ti chiami", type:"line", p:"Marco Rossi"},
+  {id:"eta", l:"Quanti anni hai", type:"line", p:"34", short:true},
+  {id:"sesso", l:"Sesso", type:"one", o:["Maschio","Femmina","Preferisco non dirlo"]},
+  {id:"esperienza", l:"Da quanto ti alleni", type:"one",
+   o:["Ricomincio adesso","Meno di 1 anno","1–3 anni","3–5 anni","Più di 5 anni"]},
+  {id:"giorni", l:"Quanti giorni a settimana ti alleni", type:"one",
+   h:"Quelli veri, non quelli che vorresti.", o:["1","2","3","4","5","6 o più"]},
+  {id:"durata", l:"Quanto dura un allenamento", type:"one",
+   o:["Meno di 45 minuti","45–60 minuti","1 ora e mezza","Più di 1 ora e mezza"]}
+]},
+
+{t:"Cosa vuoi ottenere", short:"Obiettivo", f:[
+  {id:"sport", l:"Cosa vuoi allenare", type:"many",
+   h:"Puoi sceglierli tutti e due.", o:["Palestra","Corsa"]},
+  {id:"obiettivo", l:"Qual è il tuo obiettivo", type:"text",
+   h:"Scrivilo con parole tue: «voglio mettere massa», «voglio finire la mezza maratona», «voglio togliermi il mal di schiena».", rows:3},
+  {id:"altro_sport", l:"Ti serve per uno sport che pratichi già?", type:"line",
+   h:"Calcio, arti marziali, arrampicata, sci... Noi alleniamo palestra e corsa, ma le usiamo per farti arrivare pronto a quello. Se non è il tuo caso lascia vuoto."},
+  {id:"ha_data", l:"C'è una data da rispettare", type:"one",
+   o:["Sì, una gara","Sì, una prova o un concorso","Sì, un evento personale","No"],
+   sub:{id:"data", l:"Quale, e in che giorno", type:"line"}},
+
+  {id:"carichi", l:"Che carichi usi adesso", type:"grid", k:["pesi"],
+   h:"Scrivi il peso e le ripetizioni che riesci a fare, per esempio «60 kg x 8». Se un esercizio non lo fai, lascia la riga vuota.",
+   rows:["Panca piana","Squat","Stacco da terra","Lat machine o trazioni","Spinte sopra la testa","Pressa o affondi"]},
+  {id:"carichi_quando", l:"Quei numeri di quando sono", type:"one", k:["pesi"],
+   o:["Li faccio adesso","Qualche mese fa","Più di un anno fa","Non li ho mai misurati"]},
+
+  {id:"corsa_km", l:"Quanti chilometri corri a settimana", type:"one", k:["corsa"],
+   o:["Non corro ancora","Meno di 10","10–20","20–40","Più di 40"]},
+  {id:"corsa_tempo", l:"Il tuo tempo migliore recente", type:"line", k:["corsa"],
+   h:"Su qualsiasi distanza, anche un allenamento. Per esempio «10 km in 52 minuti, a marzo».", nls:true},
+  {id:"corsa_passo", l:"A che ritmo vai quando corri tranquillo", type:"line", k:["corsa"],
+   h:"Minuti al chilometro, per esempio «6:00». Se non lo sai, tocca «non lo so».", short:true, nls:true}
+]},
+
+{t:"Dove ti alleni", short:"Dove", f:[
+  {id:"luogo", l:"Dove ti alleni", type:"many", o:["In palestra","A casa","All'aperto"]},
+  {id:"attrezzi_pal", l:"Cosa c'è nella tua palestra", type:"many",
+   se:{id:"luogo", v:["In palestra"]}, h:"Tocca quello che c'è. Se non sei sicuro, lascia stare.",
+   o:["Bilanciere e dischi","Rack o gabbia per squat","Panca","Manubri","Kettlebell",
+      "Macchine","Cavi","Sbarra per trazioni","Tapis roulant","Cyclette o vogatore"],
+   sub:{id:"manubri_kg", l:"Qual è il manubrio più pesante che c'è (guarda l'ultimo della rastrelliera)", type:"line", short:true}},
+  {id:"attrezzi_casa", l:"Cosa hai in casa", type:"many", se:{id:"luogo", v:["A casa"]},
+   o:["Manubri","Elastici","Kettlebell","Sbarra per trazioni","Panca","Niente, solo il corpo"]},
+  {id:"corsa_dove", l:"Dove corri", type:"many", k:["corsa"],
+   o:["Strada","Sterrato o sentiero","Pista di atletica","Tapis roulant"]}
+]},
+
+{t:"Salute", short:"Salute", flag:true, f:[
+  {id:"zone", l:"Hai mai avuto problemi in queste zone", type:"many",
+   h:"Tocca dove hai avuto qualcosa, poi spiegaci sotto.",
+   o:["Mai avuto niente","Spalla","Gomito","Polso","Collo","Schiena","Anca",
+      "Ginocchio","Polpaccio","Caviglia","Piede","Tendine d'Achille"]},
+  {id:"infortuni", l:"Raccontaci cosa è successo", type:"text",
+   h:"Infortuni, operazioni, cose che si ripresentano. Cosa e quando.", rows:3},
+  {id:"dolore", l:"Hai male da qualche parte adesso", type:"one",
+   o:["No","Sì, ogni tanto","Sì, quasi sempre"],
+   sub:{id:"dolore_det", l:"Dove, da quanto, e quando ti fa male (a freddo, mentre ti alleni, il giorno dopo)", type:"text", rows:3}},
+  {id:"certificato", l:"Hai il certificato medico sportivo", type:"one",
+   o:["Sì, agonistico","Sì, non agonistico","No","È scaduto",NLS],
+   sub:{id:"scadenza", l:"Quando scade", type:"line", short:true}},
+  {id:"farmaci", l:"Condizioni di salute o farmaci che dobbiamo sapere", type:"text",
+   h:"Pressione, cuore, respiro, tiroide, diabete, gravidanza, altro. Se non c'è niente scrivi «niente».", rows:2},
+  {id:"lavoro", l:"Che lavoro fai", type:"one",
+   h:"Ci serve per capire quanto sei già stanco prima di allenarti.",
+   o:["Sto seduto","Sto in piedi","È faticoso fisicamente","Faccio i turni"]},
+  {id:"altro", l:"Altro che ci serve sapere", type:"text",
+   h:"Come dormi, periodi già incasinati, viaggi. Se non c'è niente, lascia vuoto.", rows:3}
+]},
+
+{t:"Cosa ti piace e cosa no", short:"Gusti", i:"Un allenamento che non fai non serve a niente. Dicci la verità: cambiamo esercizio, non ti obblighiamo.", f:[
+  {id:"piace", l:"Quali di questi ti piace fare", type:"many",
+   o:["Panca e spinte","Squat e gambe","Stacchi","Trazioni e dorso","Le macchine","Il corpo libero",
+      "Addominali e core","Corsa lunga e lenta","Ripetute e sprint","Circuiti","Mobilità e stretching",
+      "Salti e balzi","Tapis roulant","Cyclette o vogatore"]},
+  {id:"odi", l:"Quali non vuoi proprio fare", type:"many",
+   h:"Se lo tocchi qui, non te lo mettiamo nel piano.",
+   o:["Panca e spinte","Squat e gambe","Stacchi","Trazioni e dorso","Le macchine","Il corpo libero",
+      "Addominali e core","Corsa lunga e lenta","Ripetute e sprint","Circuiti","Mobilità e stretching",
+      "Salti e balzi","Tapis roulant","Cyclette o vogatore"],
+   sub:{id:"odi_det", l:"C'è un altro esercizio che non sopporti? Scrivilo", type:"line"}}
+]}
+];
+
+const KEY = "scheda-atleta-v5";
+let V = {};
+try { V = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { V = {}; }
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const form = document.getElementById("form"), idx = document.getElementById("idx");
+
+function chiaviAttive() {
+  const sel = Array.isArray(V.sport) ? V.sport : [];
+  const set = {};
+  sel.forEach(s => (CHIAVI[s] || []).forEach(k => { set[k] = true; }));
+  return set;
+}
+function visibile(f) {
+  if (f.k) { const a = chiaviAttive(); if (!f.k.some(k => a[k])) return false; }
+  if (f.se) {
+    const v = V[f.se.id], arr = Array.isArray(v) ? v : (v ? [v] : []);
+    if (!f.se.v.some(x => arr.indexOf(x) > -1)) return false;
+  }
+  return true;
+}
+const rowId = (f, i) => f.id + "__" + i;
+
+function fieldHTML(f, main) {
+  const h = f.h ? '<span class="hint">' + esc(f.h) + "</span>" : "";
+  const attr = main ? ' class="f" data-fid="' + f.id + '"' : ' class="sub"';
+  const lab = '<span class="' + (main ? "lab" : "sub-lab") + '">' + esc(f.l) + "</span>";
+
+  if (f.type === "grid") {
+    let s = "<div" + attr + ">" + lab + h + '<div class="grid">';
+    f.rows.forEach((r, i) => {
+      s += '<div class="gr"><span class="gl">' + esc(r) + "</span>"
+        + '<input type="text" class="fld gi" id="' + rowId(f, i) + '" placeholder="60 kg x 8"></div>';
+    });
+    return s + "</div></div>";
+  }
+  if (f.type === "one" || f.type === "many") {
+    const many = f.type === "many";
+    let s = "<div" + attr + ">" + lab + h
+      + '<div class="opts" role="group" data-id="' + f.id + '" data-many="' + many + '">';
+    f.o.forEach(o => {
+      s += '<button type="button" class="opt" aria-pressed="false" data-v="' + esc(o) + '">'
+        + '<span class="tick">✓</span>' + esc(o) + "</button>";
+    });
+    return s + "</div>" + (f.sub ? fieldHTML(f.sub, false) : "") + "</div>";
+  }
+  const tag = f.type === "line"
+    ? '<input type="text" id="' + f.id + '" class="fld' + (f.short ? " short" : "") + '"'
+      + (f.p ? ' placeholder="' + esc(f.p) + '"' : "") + ">"
+    : '<textarea id="' + f.id + '" class="fld" rows="' + (f.rows || 1) + '"'
+      + (f.p ? ' placeholder="' + esc(f.p) + '"' : "") + "></textarea>";
+  const nls = f.nls
+    ? '<div class="chiprow"><button type="button" class="chip" data-nls="' + f.id + '">non lo so</button></div>' : "";
+  return "<div" + attr + '><label for="' + f.id + '" class="' + (main ? "lab" : "sub-lab") + '">'
+    + esc(f.l) + "</label>" + h + tag + nls + "</div>";
+}
+
+S.forEach((s, i) => {
+  const n = String(i + 1).padStart(2, "0");
+  const sec = document.createElement("section");
+  sec.id = "s" + (i + 1);
+  let html = '<div class="sec-head"><div class="sec-n">' + n + '</div><h2>' + esc(s.t) + "</h2></div>";
+  if (s.i) html += '<p class="sec-intro">' + esc(s.i) + "</p>";
+  if (s.flag) html += '<div class="flag"><span class="tag">Importante</span>'
+    + "<p>Non ti togliamo niente per prudenza, ma dobbiamo saperlo. Se hai <strong>male adesso</strong>, "
+    + "o il certificato medico non è valido, prima del piano ti mandiamo dalla persona giusta.</p></div>";
+  html += '<div class="fields">';
+  s.f.forEach(f => { html += fieldHTML(f, true); });
+  sec.innerHTML = html + "</div>";
+  form.appendChild(sec);
+  const li = document.createElement("li");
+  li.innerHTML = '<a href="#s' + (i + 1) + '" data-sec="' + i + '"><span class="n">' + n + "</span><span>" + esc(s.short) + "</span></a>";
+  idx.appendChild(li);
+});
+
+function grow(t) { if (t.tagName === "TEXTAREA") { t.style.height = "auto"; t.style.height = (t.scrollHeight + 2) + "px"; } }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(V)); } catch (e) {} }
+function pieno(id) { const v = V[id]; return Array.isArray(v) ? v.length > 0 : !!(v && String(v).trim()); }
+function has(f) {
+  if (f.type === "grid") return f.rows.some((r, i) => pieno(rowId(f, i)));
+  return pieno(f.id);
+}
+
+document.querySelectorAll(".fld").forEach(el => {
+  if (V[el.id]) el.value = V[el.id];
+  grow(el);
+  if (el.value.trim()) el.classList.add("filled");
+  el.addEventListener("input", () => {
+    V[el.id] = el.value;
+    el.classList.toggle("filled", el.value.trim().length > 0);
+    grow(el); save(); refresh();
+  });
+});
+
+document.querySelectorAll(".opts").forEach(g => {
+  const id = g.dataset.id, many = g.dataset.many === "true", cur = V[id];
+  g.querySelectorAll(".opt").forEach(b => {
+    const v = b.dataset.v;
+    b.setAttribute("aria-pressed", (many ? (Array.isArray(cur) && cur.indexOf(v) > -1) : cur === v) ? "true" : "false");
+    b.addEventListener("click", () => {
+      if (many) {
+        let a = Array.isArray(V[id]) ? V[id].slice() : [];
+        const k = a.indexOf(v);
+        if (k > -1) a.splice(k, 1); else a.push(v);
+        V[id] = a;
+        g.querySelectorAll(".opt").forEach(x => x.setAttribute("aria-pressed", a.indexOf(x.dataset.v) > -1 ? "true" : "false"));
+      } else {
+        V[id] = (V[id] === v) ? "" : v;
+        g.querySelectorAll(".opt").forEach(x => x.setAttribute("aria-pressed", V[id] === x.dataset.v ? "true" : "false"));
+      }
+      save(); refresh();
+    });
+  });
+});
+
+document.querySelectorAll(".chip[data-nls]").forEach(b => {
+  b.addEventListener("click", () => {
+    const el = document.getElementById(b.dataset.nls);
+    el.value = "NON LO SO"; V[el.id] = el.value;
+    el.classList.add("filled"); grow(el); save(); refresh(); el.focus();
+  });
+});
+
+function txt(id) { const v = V[id]; return Array.isArray(v) ? v.join(", ") : (v ? String(v).trim() : ""); }
+
+function compile() {
+  const d = new Date(), p = n => String(n).padStart(2, "0");
+  let out = "SCHEDA ATLETA\nNome: " + (txt("nome") || "—")
+    + "\nCompilata il: " + p(d.getDate()) + "/" + p(d.getMonth() + 1) + "/" + d.getFullYear() + "\n";
+  S.forEach((s, i) => {
+    const vis = s.f.filter(visibile);
+    if (!vis.length) return;
+    out += "\n\n" + "=".repeat(52) + "\n" + (i + 1) + ". " + s.t.toUpperCase() + "\n" + "=".repeat(52) + "\n";
+    vis.forEach(f => {
+      if (f.type === "grid") {
+        out += "\n" + f.l + "\n";
+        let n = 0;
+        f.rows.forEach((r, k) => { const v = txt(rowId(f, k)); if (v) { out += "   " + r + ": " + v + "\n"; n++; } });
+        if (!n) out += "→ (nessuna risposta)\n";
+        return;
+      }
+      out += "\n" + f.l + "\n→ " + (txt(f.id) || "(nessuna risposta)") + "\n";
+      if (f.sub) { const sv = txt(f.sub.id); if (sv) out += "   " + f.sub.l + ": " + sv + "\n"; }
+    });
+  });
+  return out;
+}
+
+const fillEl = document.getElementById("fill"), pctEl = document.getElementById("pct");
+function refresh() {
+  let tot = 0, done = 0;
+  S.forEach((s, i) => {
+    const vis = s.f.filter(visibile);
+    s.f.forEach(f => {
+      const el = form.querySelector('.f[data-fid="' + f.id + '"]');
+      if (el) el.hidden = vis.indexOf(f) === -1;
+    });
+    tot += vis.length;
+    done += vis.filter(has).length;
+    const a = idx.querySelector('a[data-sec="' + i + '"]');
+    if (a) a.classList.toggle("done", vis.length > 0 && vis.every(has));
+  });
+  fillEl.style.width = (tot ? done / tot * 100 : 0) + "%";
+  pctEl.textContent = done + " / " + tot;
+  document.getElementById("out").value = compile();
+}
+
+const say = document.getElementById("say");
+const tell = (m, cls) => { say.textContent = m; say.className = "say" + (cls ? " " + cls : ""); };
+
+document.getElementById("pr").addEventListener("click", () => window.print());
+document.getElementById("cp").addEventListener("click", async () => {
+  const out = document.getElementById("out");
+  try { await navigator.clipboard.writeText(out.value); tell("Copiato.", "ok"); }
+  catch (e) { out.hidden = false; out.focus(); out.select(); tell("Il testo è qui sotto: premi Cmd+C (o Ctrl+C) per copiarlo."); }
+});
+
+const downloads = {
+  save({ filename, data }) {
+    const url = URL.createObjectURL(new Blob([data], { type: "text/plain;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 2000);
+    return Promise.resolve({ status: "saved" });
+  }
+};
+
+function nomeFile() {
+  const n = (txt("nome") || "atleta").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const d = new Date(), p = x => String(x).padStart(2, "0");
+  return "scheda-" + (n || "atleta") + "-" + d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + ".txt";
+}
+
+document.getElementById("dl").addEventListener("click", async () => {
+  if (!downloads) { tell("Da qui non si può scaricare: usa «copia il testo».", "err"); return; }
+  try { await downloads.save({ filename: nomeFile(), data: compile() }); tell("Scaricato. Mandacelo quando vuoi.", "ok"); }
+  catch (e) {
+    const c = e && e.code;
+    if (c === "declined") tell("");
+    else tell("Non è riuscito. Usa «copia il testo».", "err");
+  }
+});
+
+// Caselle a cui arrivano le schede compilate.
+const STUDIO = ["jacopo.borsatto@gmail.com", "emiliano.verdi222@gmail.com"];
+const STUDIO_TXT = STUDIO.join(" e ");
+const send = document.getElementById("send");
+
+send.addEventListener("click", async () => {
+  if (!txt("nome")) {
+    tell("Scrivi almeno il tuo nome nel blocco 01, così sappiamo di chi è la scheda.", "err");
+    location.hash = "#s1";
+    return;
+  }
+  const testo = compile();
+  let copiato = false;
+  try { await navigator.clipboard.writeText(testo); copiato = true; } catch (e) {}
+
+  const url = "mailto:" + STUDIO.join(",")
+    + "?subject=" + encodeURIComponent("Scheda atleta — " + txt("nome"))
+    + "&body=" + encodeURIComponent(testo);
+  let aperto = false;
+  try { aperto = !!window.open(url, "_blank"); } catch (e) {}
+  if (!aperto) { try { window.top.location.href = url; aperto = true; } catch (e) {} }
+
+  document.querySelector(".export .inner").innerHTML =
+    '<p class="grazie">Grazie, ' + esc(txt("nome").split(" ")[0]) + '.</p>'
+    + '<p class="grazie-sub">' + (aperto
+        ? "Ti si apre l'email già scritta con dentro tutte le tue risposte: premi invio e ci arriva. "
+        : "")
+    + (copiato
+        ? "Abbiamo anche copiato tutto negli appunti: se l'email non parte, incolla il testo in un messaggio a <b>" + STUDIO_TXT + "</b> o su WhatsApp."
+        : "Se l'email non si apre, usa il pulsante qui sotto per scaricare il file e mandacelo a <b>" + STUDIO_TXT + "</b>.")
+    + '</p>'
+    + '<p class="alt">'
+    + '<button type="button" class="linkbtn" id="dl2">scarica il file</button> · '
+    + '<button type="button" class="linkbtn" id="cp2">copia di nuovo il testo</button></p>'
+    + '<p class="say" id="say2"></p>';
+
+  const say2 = document.getElementById("say2");
+  document.getElementById("cp2").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(compile()); say2.textContent = "Copiato."; }
+    catch (e) { say2.textContent = "Non è riuscito: scarica il file."; }
+  });
+  document.getElementById("dl2").addEventListener("click", async () => {
+    if (!downloads) { say2.textContent = "Da qui non si può scaricare."; return; }
+    try { await downloads.save({ filename: nomeFile(), data: compile() }); say2.textContent = "Scaricato."; }
+    catch (e) {}
+  });
+});
+
+const io = new IntersectionObserver(es => {
+  es.forEach(e => {
+    if (!e.isIntersecting) return;
+    idx.querySelectorAll("a").forEach(a => a.classList.remove("on"));
+    const a = idx.querySelector('a[href="#' + e.target.id + '"]');
+    if (a) a.classList.add("on");
+  });
+}, { rootMargin: "-70px 0px -65% 0px" });
+document.querySelectorAll("section[id]").forEach(s => io.observe(s));
+
+refresh();
+window.addEventListener("resize", () => document.querySelectorAll("textarea.fld").forEach(grow));
+</script>
+
+</body>
+</html>
