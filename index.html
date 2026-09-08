@@ -261,6 +261,8 @@ const CHIAVI = { "Palestra":["pesi"], "Corsa":["corsa"] };
 const S = [
 {t:"Chi sei", short:"Chi sei", f:[
   {id:"nome", l:"Come ti chiami", type:"line", p:"Marco Rossi"},
+  {id:"email", l:"La tua email", type:"line", p:"nome@email.it",
+   h:"Ci serve per risponderti e mandarti il piano."},
   {id:"eta", l:"Quanti anni hai", type:"line", p:"34", short:true},
   {id:"sesso", l:"Sesso", type:"one", o:["Maschio","Femmina","Preferisco non dirlo"]},
   {id:"esperienza", l:"Da quanto ti alleni", type:"one",
@@ -554,37 +556,13 @@ const STUDIO = ["jacopo.borsatto@gmail.com", "emiliano.verdi222@gmail.com"];
 const STUDIO_TXT = STUDIO.join(" e ");
 const send = document.getElementById("send");
 
-send.addEventListener("click", async () => {
-  if (!txt("nome")) {
-    tell("Scrivi almeno il tuo nome nel blocco 01, così sappiamo di chi è la scheda.", "err");
-    location.hash = "#s1";
-    return;
-  }
-  const testo = compile();
-  let copiato = false;
-  try { await navigator.clipboard.writeText(testo); copiato = true; } catch (e) {}
-
-  const url = "mailto:" + STUDIO.join(",")
-    + "?subject=" + encodeURIComponent("Scheda atleta — " + txt("nome"))
-    + "&body=" + encodeURIComponent(testo);
-  let aperto = false;
-  try { aperto = !!window.open(url, "_blank"); } catch (e) {}
-  if (!aperto) { try { window.top.location.href = url; aperto = true; } catch (e) {} }
-
+function grazie(html) {
   document.querySelector(".export .inner").innerHTML =
-    '<p class="grazie">Grazie, ' + esc(txt("nome").split(" ")[0]) + '.</p>'
-    + '<p class="grazie-sub">' + (aperto
-        ? "Ti si apre l'email già scritta con dentro tutte le tue risposte: premi invio e ci arriva. "
-        : "")
-    + (copiato
-        ? "Abbiamo anche copiato tutto negli appunti: se l'email non parte, incolla il testo in un messaggio a <b>" + STUDIO_TXT + "</b> o su WhatsApp."
-        : "Se l'email non si apre, usa il pulsante qui sotto per scaricare il file e mandacelo a <b>" + STUDIO_TXT + "</b>.")
-    + '</p>'
-    + '<p class="alt">'
-    + '<button type="button" class="linkbtn" id="dl2">scarica il file</button> · '
-    + '<button type="button" class="linkbtn" id="cp2">copia di nuovo il testo</button></p>'
+    '<p class="grazie">Grazie, ' + esc((txt("nome").split(" ")[0]) || "") + '.</p>'
+    + '<p class="grazie-sub">' + html + '</p>'
+    + '<p class="alt"><button type="button" class="linkbtn" id="dl2">scarica una copia</button> · '
+    + '<button type="button" class="linkbtn" id="cp2">copia il testo</button></p>'
     + '<p class="say" id="say2"></p>';
-
   const say2 = document.getElementById("say2");
   document.getElementById("cp2").addEventListener("click", async () => {
     try { await navigator.clipboard.writeText(compile()); say2.textContent = "Copiato."; }
@@ -595,6 +573,60 @@ send.addEventListener("click", async () => {
     try { await downloads.save({ filename: nomeFile(), data: compile() }); say2.textContent = "Scaricato."; }
     catch (e) {}
   });
+}
+
+function apriMail(testo) {
+  const url = "mailto:" + STUDIO.join(",")
+    + "?subject=" + encodeURIComponent("Scheda atleta — " + txt("nome"))
+    + "&body=" + encodeURIComponent(testo);
+  try { if (window.open(url, "_blank")) return true; } catch (e) {}
+  try { window.top.location.href = url; return true; } catch (e) {}
+  return false;
+}
+
+send.addEventListener("click", async () => {
+  if (!txt("nome")) {
+    tell("Scrivi il tuo nome nel blocco 01, così sappiamo di chi è la scheda.", "err");
+    location.hash = "#s1"; document.getElementById("nome").focus(); return;
+  }
+  const mail = txt("email");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail)) {
+    tell("Controlla la tua email: ci serve per risponderti.", "err");
+    location.hash = "#s1"; document.getElementById("email").focus(); return;
+  }
+
+  const testo = compile();
+  send.disabled = true;
+  tell("Sto inviando…");
+
+  try {
+    const r = await fetch("https://formsubmit.co/ajax/" + STUDIO[0], {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Accept": "application/json" },
+      body: JSON.stringify({
+        _subject: "Scheda atleta — " + txt("nome"),
+        _cc: STUDIO.slice(1).join(","),
+        _replyto: mail,
+        _template: "table",
+        Nome: txt("nome"),
+        Email: mail,
+        Scheda: testo
+      })
+    });
+    if (!r.ok) throw new Error("http " + r.status);
+    const j = await r.json();
+    if (String(j.success) !== "true") throw new Error("ko");
+    grazie("Le tue risposte sono arrivate allo studio. Le leggiamo e ti scriviamo noi a <b>" + esc(mail) + "</b>: se manca qualcosa te lo chiediamo, altrimenti passiamo al piano.");
+    return;
+  } catch (e) { /* si prosegue col ripiego */ }
+
+  let copiato = false;
+  try { await navigator.clipboard.writeText(testo); copiato = true; } catch (e) {}
+  const aperto = apriMail(testo);
+  send.disabled = false;
+  grazie((aperto ? "L'invio diretto non è passato, quindi ti abbiamo aperto l'email già scritta: premi invio e ci arriva lo stesso. " : "")
+    + (copiato ? "Abbiamo anche copiato tutto negli appunti: puoi incollarlo in un messaggio a <b>" + STUDIO_TXT + "</b>."
+               : "Scarica il file qui sotto e mandacelo a <b>" + STUDIO_TXT + "</b>."));
 });
 
 const io = new IntersectionObserver(es => {
