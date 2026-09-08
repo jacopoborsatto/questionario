@@ -758,8 +758,8 @@ const CHIAVE = "c511e04f-3f37-430b-975e-b9e1cdd95766";
 const STUDIO_TXT = STUDIO.join(" e ");
 const send = document.getElementById("send");
 
-function grazie(html) {
-  svuota();
+function grazie(html, inviato) {
+  if (inviato) svuota();   // se non è partita, le risposte restano salvate
   document.querySelector(".export .inner").innerHTML =
     '<p class="grazie">Grazie, ' + esc((txt("nome").split(" ")[0]) || "") + '.</p>'
     + '<p class="grazie-sub">' + html + '</p>'
@@ -816,7 +816,7 @@ send.addEventListener("click", async () => {
     const j = await r.json();
     if (!r.ok || j.success !== true) throw new Error(j.message || ("http " + r.status));
     grazie("Le tue risposte sono arrivate allo studio. Le leggiamo e ti scriviamo a <b>"
-      + esc(mail) + "</b>: se manca qualcosa te lo chiediamo, altrimenti passiamo al piano.");
+      + esc(mail) + "</b>: se manca qualcosa te lo chiediamo, altrimenti passiamo al piano.", true);
     return;
   } catch (e) { /* si prosegue col ripiego */ }
 
@@ -824,9 +824,14 @@ send.addEventListener("click", async () => {
   try { await navigator.clipboard.writeText(testo); copiato = true; } catch (e) {}
   const aperto = apriMail(testo);
   send.disabled = false;
-  grazie((aperto ? "L'invio diretto non è passato, quindi ti abbiamo aperto l'email già scritta: premi invio e ci arriva lo stesso. " : "")
-    + (copiato ? "Abbiamo anche copiato tutto negli appunti: puoi incollarlo in un messaggio a <b>" + STUDIO_TXT + "</b>."
-               : "Scarica il file qui sotto e mandacelo a <b>" + STUDIO_TXT + "</b>."));
+  grazie("<b>Attenzione: la scheda non è ancora arrivata.</b> L'invio automatico non è passato. "
+    + (aperto
+        ? "Ti abbiamo aperto l'email già scritta: <b>devi premere «invia» lì</b>, altrimenti non ci arriva niente. "
+        : "")
+    + (copiato
+        ? "L'abbiamo anche copiata negli appunti: puoi incollarla in un messaggio a <b>" + STUDIO[0] + "</b> o su WhatsApp. "
+        : "Scarica il file qui sotto e mandacelo a <b>" + STUDIO[0] + "</b>. ")
+    + "Le tue risposte restano salvate su questo dispositivo: se riprovi fra poco le ritrovi già compilate.", false);
 });
 
 const io = new IntersectionObserver(es => {
