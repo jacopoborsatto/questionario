@@ -714,7 +714,8 @@ send.addEventListener("click", async () => {
   send.disabled = true;
   tell("Sto preparando il documento…");
 
-  function pacco(conAllegato) {
+  try {
+    tell("Sto inviando…");
     const f = new FormData();
     f.append("access_key", CHIAVE);
     f.append("subject", "Scheda atleta — " + txt("nome"));
@@ -722,26 +723,11 @@ send.addEventListener("click", async () => {
     f.append("replyto", mail);
     f.append("ccemail", STUDIO.slice(1).join(","));
     f.append("message", testo);
-    if (conAllegato) {
-      const blob = creaPdf();
-      if (blob) f.append("attachment", blob, nomeFile("pdf"));
-    }
-    return f;
-  }
-
-  async function spedisci(conAllegato) {
     const r = await fetch("https://api.web3forms.com/submit", {
-      method: "POST", headers: { "Accept": "application/json" }, body: pacco(conAllegato)
+      method: "POST", headers: { "Accept": "application/json" }, body: f
     });
     const j = await r.json();
     if (!r.ok || j.success !== true) throw new Error(j.message || ("http " + r.status));
-    return true;
-  }
-
-  try {
-    tell("Sto inviando…");
-    try { await spedisci(true); }        // prima col PDF allegato
-    catch (e) { await spedisci(false); } // se non passa, almeno il testo
     grazie("Le tue risposte sono arrivate allo studio. Le leggiamo e ti scriviamo a <b>"
       + esc(mail) + "</b>: se manca qualcosa te lo chiediamo, altrimenti passiamo al piano.");
     return;
